@@ -123,7 +123,7 @@ export default function App() {
         status: 'fallback',
         postal_code: data.search_postal,
         town: data.town,
-        model: 'gemini-2.5-flash',
+        model: 'gemini-3.1-flash-lite',
         generated_at: new Date().toISOString(),
         report: `### 1. Executive Valuation & Pricing Benchmark
 - **Transacted Pricing & PSF**: The latest transactions for Block 421 Ang Mo Kio Avenue 10 show a median resale price of S$484,000 (S$545 PSF) for 3-Room and 4-Room flats, which represents competitive value relative to recent mature town medians.

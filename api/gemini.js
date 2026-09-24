@@ -1,8 +1,10 @@
 /**
- * api/gemini.js - Google Gemini 2.5 Flash Property Valuation & Intelligence Report
+ * api/gemini.js - Google Gemini Property Valuation & Intelligence Report
  * Accepts aggregated data payload (HDB/URA transactions + OneMap amenities)
  */
 import { GoogleGenAI } from '@google/genai';
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export default async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
@@ -135,22 +137,35 @@ Keep the tone professional, objective, and deeply rooted in Singapore housing re
     });
 
     let response;
-    let usedModel = 'gemini-2.5-flash';
-    const candidateModels = ['gemini-2.5-flash', 'gemini-3.6-flash', 'gemini-3.8-flash'];
+    let usedModel = 'gemini-3.1-flash-lite';
+    const candidateModels = ['gemini-3.1-flash-lite', 'gemini-3.8-flash', 'gemini-flash-latest'];
     let lastError = null;
 
     for (const model of candidateModels) {
-      try {
-        response = await ai.models.generateContent({
-          model,
-          contents: promptText
-        });
-        usedModel = model;
-        break;
-      } catch (err) {
-        lastError = err;
-        console.warn(`Model ${model} attempt failed:`, err.message);
+      // Try each model with up to 2 attempts for transient 503/429 errors
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          response = await ai.models.generateContent({
+            model,
+            contents: promptText
+          });
+          usedModel = model;
+          break;
+        } catch (err) {
+          lastError = err;
+          const isTransient = err.message?.includes('503') ||
+                              err.message?.includes('UNAVAILABLE') ||
+                              err.message?.includes('429') ||
+                              err.message?.includes('RESOURCE_EXHAUSTED');
+          console.warn(`Model ${model} (attempt ${attempt + 1}) failed:`, err.message);
+          if (isTransient && attempt === 0) {
+            await sleep(800);
+            continue;
+          }
+          break;
+        }
       }
+      if (response) break;
     }
 
     if (!response) {
