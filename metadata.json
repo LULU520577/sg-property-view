@@ -1,0 +1,6 @@
+{
+  "name": "SG Property Intelligence",
+  "description": "Interactive localized property intelligence dashboard for Singapore HDB resale transactions, URA private caveats, OneMap amenities, and Gemini AI property valuation reports.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
